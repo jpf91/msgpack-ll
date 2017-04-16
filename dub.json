@@ -1,0 +1,10 @@
+{
+	"name": "msgpack-ll",
+	"authors": [
+		"Johannes Pfau"
+	],
+	"description": "A low level, @nogc, nothrow, @safe and betterC compatible msgpack library",
+	"copyright": "Copyright © 2017, Johannes Pfau",
+	"license": "BSL",
+	"targetType": "library",
+}

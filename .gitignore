@@ -1,0 +1,6 @@
+*.lst
+docs.json
+.dub
+dub.selections.json
+msgpack-ll-test-library
+libmsgpack-ll.a

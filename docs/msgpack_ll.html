@@ -1,0 +1,136 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Module msgpack_ll</title><link rel="stylesheet" type="text/css" href="./styles/ddox.css"/><link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/><script type="text/javascript" src="./scripts/jquery.js">/**/</script><script type="text/javascript" src="./scripts/ddox.js">/**/</script></head><body onload="setupDdox();"><nav id="main-nav"><noscript><p style="color: red">The search functionality needs JavaScript enabled</p></noscript><div id="symbolSearchPane" style="display: none"><form action="#" method="GET"><input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/></form><ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();</script></div><ul class="tree-view"><li><div class="module selected"><a href="./msgpack_ll.html">msgpack_ll</a></div></li></ul></nav><div id="main-contents"><h1>Module msgpack_ll</h1><p>A low-level <code class="lang-d">pure @nogc, nothrow, @safe</code> and <code class="lang-d">betterC</code> MessagePack implementation.
+</p>
+<section></section>
+<section><section><h2>Note</h2>
+<p>As this is a low-level implementation certain error checking a some handling
+ of the MessagePack data format has to be done by the API user.
+ The following conditions need to be ensured by the user:
+ <ul>  <li>When calling <code class="lang-d">parseType</code> the compile time type must match the actual data
+    type or incorrect results will be returned. Use <code class="lang-d">getType</code> to verify the type
+    before calling <code class="lang-d">parseType</code>.</li>
+  <li>The *fix types have certain maximum and minimum values. Read the source
+    code and serach for <code class="lang-d">DebugMsgpackLL</code> or refer to the MessagePack specification
+    for details.</li>
+  <li>The <code class="lang-d">debug=DebugMsgpackLL</code> debug version can be used to enable debug checks for
+    these problems.</li></ul>
+</p>
+
+<p> Requires only <code class="lang-d">std.bitmanip</code> for <code class="lang-d">bigEndianToNative</code> and <code class="lang-d">nativeToBigEndian</code> as
+ external dependency.
+</p>
+</section>
+<section><h2>TODO</h2>
+<p>Could try to avoid this dependency. This is only a compile time
+ dependency anyway though, as these functions are templates and get inlined
+ into this module.
+</p>
+</section>
+<section><h2>Example</h2>
+<p>Most types are handled like this:
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ubyte</span><span class="pun">[</span><span class="lit">128</span><span class="pun">] </span><span class="pln">buffer</span><span class="pun">;
+</span><span class="kwd">enum </span><span class="pln">type </span><span class="pun">= <a href="./msgpack_ll/MsgpackType.uint8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint8</span></a><span class="pun">;
+
+</span><span class="com">// Serialization
+<a href="./msgpack_ll/formatType.html"></span><span class="pln">formatType</span></a><span class="pun">!(</span><span class="pln">type</span><span class="pun">)(</span><span class="lit">42</span><span class="pun">, </span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+
+</span><span class="com">// Now deserialize
+// Get the type at runtime
+</span><span class="kwd">assert</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == </span><span class="pln">type</span><span class="pun">);
+</span><span class="com">// and deserialize specifying the type at compile time
+</span><span class="kwd">const </span><span class="pln">result </span><span class="pun">= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result </span><span class="pun">== </span><span class="lit">42</span><span class="pun">);
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+<p>Values for nil, true8 and false8 are ignored and can be skipped:
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ubyte</span><span class="pun">[</span><span class="lit">128</span><span class="pun">] </span><span class="pln">buffer</span><span class="pun">;
+</span><span class="kwd">enum </span><span class="pln">type </span><span class="pun">= <a href="./msgpack_ll/MsgpackType.true8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">true8</span></a><span class="pun">;
+
+</span><span class="com">// Serialization
+<a href="./msgpack_ll/formatType.html"></span><span class="pln">formatType</span></a><span class="pun">!(</span><span class="pln">type</span><span class="pun">)(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+
+</span><span class="com">// Now deserialize
+// Get the type at runtime
+</span><span class="kwd">assert</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == </span><span class="pln">type</span><span class="pun">);
+</span><span class="com">// and deserialize specifying the type at compile time
+</span><span class="kwd">const </span><span class="pln">result </span><span class="pun">= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result </span><span class="pun">== </span><span class="kwd">true</span><span class="pun">);
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+<p>The fixExt types accept an additional extType parameter and data:
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ubyte</span><span class="pun">[</span><span class="lit">128</span><span class="pun">] </span><span class="pln">buffer</span><span class="pun">;
+</span><span class="typ">ubyte</span><span class="pun">[</span><span class="lit">1</span><span class="pun">] </span><span class="pln">value </span><span class="pun">= [</span><span class="lit">1</span><span class="pun">];
+</span><span class="kwd">enum </span><span class="pln">type </span><span class="pun">= <a href="./msgpack_ll/MsgpackType.fixExt1.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">fixExt1</span></a><span class="pun">;
+
+</span><span class="com">// Serialization
+<a href="./msgpack_ll/formatType.html"></span><span class="pln">formatType</span></a><span class="pun">!(</span><span class="pln">type</span><span class="pun">)(</span><span class="lit">42</span><span class="pun">, </span><span class="pln">value</span><span class="pun">, </span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+
+</span><span class="com">// Now deserialize
+// Get the type at runtime
+</span><span class="kwd">assert</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == </span><span class="pln">type</span><span class="pun">);
+</span><span class="kwd">const </span><span class="pln">result </span><span class="pun">= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+</span><span class="com">// and deserialize specifying the type at compile time
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result</span><span class="pun">[</span><span class="lit">0</span><span class="pun">] == </span><span class="lit">42</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result</span><span class="pun">[</span><span class="lit">1 </span><span class="pun">.. $] == </span><span class="pln">value</span><span class="pun">);
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+<p>The ext types accept an additional extType parameter and data length.
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ubyte</span><span class="pun">[</span><span class="lit">128</span><span class="pun">] </span><span class="pln">buffer</span><span class="pun">;
+</span><span class="kwd">enum </span><span class="pln">type </span><span class="pun">= <a href="./msgpack_ll/MsgpackType.ext8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">ext8</span></a><span class="pun">;
+
+</span><span class="com">// Serialization
+<a href="./msgpack_ll/formatType.html"></span><span class="pln">formatType</span></a><span class="pun">!(</span><span class="pln">type</span><span class="pun">)(</span><span class="lit">10</span><span class="pun">, </span><span class="lit">42</span><span class="pun">, </span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+
+</span><span class="com">// Now deserialize
+// Get the type at runtime
+</span><span class="kwd">assert</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == </span><span class="pln">type</span><span class="pun">);
+</span><span class="com">// and deserialize specifying the type at compile time
+</span><span class="kwd">const </span><span class="pln">result </span><span class="pun">= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">(</span><span class="pln">buffer</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!</span><span class="pln">type</span><span class="pun">]);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result<wbr/></span><span class="pun">.</span><span class="pln">type </span><span class="pun">== </span><span class="lit">42</span><span class="pun">);
+</span><span class="kwd">assert</span><span class="pun">(</span><span class="pln">result<wbr/></span><span class="pun">.</span><span class="pln">length </span><span class="pun">== </span><span class="lit">10</span><span class="pun">);
+</span></code></pre>
+</section>
+<section><h2>Example</h2>
+<p>Often you'll want to decode multiple possible types:
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ulong </span><span class="pln">decodeSomeUint</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">[] </span><span class="pln">data</span><span class="pun">)
+{
+    </span><span class="kwd">switch </span><span class="pun">(</span><span class="pln">data</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]<a href="./msgpack_ll/getType.html"></span><wbr/><span class="pun">.</span><span class="pln">getType</span></a><span class="pun">())
+    {
+    </span><span class="kwd">case <a href="./msgpack_ll/MsgpackType.posFixInt.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">posFixInt</span></a><span class="pun">:
+        </span><span class="kwd">return <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.posFixInt.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">posFixInt</span></a><span class="pun">)(
+            </span><span class="pln">data</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.posFixInt.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">posFixInt</span></a><span class="pun">)]);
+    </span><span class="kwd">case <a href="./msgpack_ll/MsgpackType.uint8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint8</span></a><span class="pun">:
+        </span><span class="kwd">return <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint8</span></a><span class="pun">)(
+            </span><span class="pln">data</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint8</span></a><span class="pun">)]);
+    </span><span class="kwd">case <a href="./msgpack_ll/MsgpackType.uint16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint16</span></a><span class="pun">:
+        </span><span class="kwd">return <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint16</span></a><span class="pun">)(
+            </span><span class="pln">data</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint16</span></a><span class="pun">)]);
+    </span><span class="kwd">case <a href="./msgpack_ll/MsgpackType.uint32.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint32</span></a><span class="pun">:
+        </span><span class="kwd">return <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint32.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint32</span></a><span class="pun">)(
+            </span><span class="pln">data</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint32.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint32</span></a><span class="pun">)]);
+    </span><span class="kwd">case <a href="./msgpack_ll/MsgpackType.uint64.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint64</span></a><span class="pun">:
+        </span><span class="kwd">return <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint64.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint64</span></a><span class="pun">)(
+            </span><span class="pln">data</span><span class="pun">[</span><span class="lit">0 </span><span class="pun">.. <a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.uint64.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">uint64</span></a><span class="pun">)]);
+    </span><span class="kwd">default</span><span class="pun">:
+        </span><span class="kwd">throw new </span><span class="typ">Exception</span><span class="pun">(</span><span class="str">"Expected integer type"</span><span class="pun">);
+    }
+}
+</span></code></pre>
+</section>
+</section><section><h2>Functions</h2><table><col class="caption"/><tr><th>Name</th><th>Description</th></tr><tr><td><code><a id="formatType" class="["public"]" href="./msgpack_ll/formatType.html">formatType</a><span class="decoration">(value, data)</span></code></td><td>Serialize a value to a certain type.
+</td></tr><tr><td><code><a id="getDataSize" class="["public"]" href="./msgpack_ll/getDataSize.html">getDataSize</a><span class="decoration">(type)</span></code></td><td>Get serialized data size at runtime. <code class="lang-d">DataSize!()</code> should be preferred
+ if the type is known at compile time.
+</td></tr><tr><td><code><a id="getType" class="["public"]" href="./msgpack_ll/getType.html">getType</a><span class="decoration">(value)</span></code></td><td>Look at the first byte of an object to determine the type.
+</td></tr><tr><td><code><a id="parseType" class="["public"]" href="./msgpack_ll/parseType.html">parseType</a><span class="decoration">(data)</span></code></td><td>Parses the MessagePack object with specified type.
+</td></tr></table></section><section><h2>Structs</h2><table><col class="caption"/><tr><th>Name</th><th>Description</th></tr><tr><td><code><a id="ExtType" class="["public"]" href="./msgpack_ll/ExtType.html">ExtType</a></code></td><td>Serialization information about an ext type.
+</td></tr></table></section><section><h2>Enums</h2><table><col class="caption"/><tr><th>Name</th><th>Description</th></tr><tr><td><code><a id="MsgpackType" class="["public"]" href="./msgpack_ll/MsgpackType.html">MsgpackType</a></code></td><td>Enum of MessagePack types.
+</td></tr></table></section><section><h2>Manifest constants</h2><table><col class="caption"/><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><a id="DataSize" class="["public"]" href="./msgpack_ll/DataSize.html"><code>DataSize</code></a></td><td></td><td>Get serialized data size at compile time.
+</td></tr></table></section><footer><table class="license-info"><tr><th>Authors</th><td></td></tr><tr><th>Copyright</th><td></td></tr><tr><th>License</th><td></td></tr></table><p class="faint">Generated using the DDOX documentation generator</p></footer></div></body></html>
