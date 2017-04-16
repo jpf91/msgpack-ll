@@ -1,0 +1,12 @@
+language: d
+
+d:
+  - dmd
+
+install:
+  - wget -O doveralls "https://github.com/ColdenCullen/doveralls/releases/download/v1.3.1/doveralls_linux_travis"
+
+script:
+  - dub test -b unittest-cov
+  - chmod +x ./doveralls
+  - ./doveralls
