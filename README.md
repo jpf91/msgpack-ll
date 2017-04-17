@@ -75,7 +75,7 @@ pure nothrow @nogc @safe void msgpack_ll.format(ref ubyte[128]):
 ```d
 void format(ref ubyte[128] buffer)
 {
-    enum type = MsgpackType.posFixInt;
+    enum type = MsgpackType.negFixInt;
     formatType!(type)(-11, buffer[0..DataSize!type]);
 }
 ```
