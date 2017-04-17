@@ -9,11 +9,36 @@ $('#symbolSearchPane').show();</script></div><ul class="tree-view"><li><div clas
  <ul>  <li>When calling <code class="lang-d">parseType</code> the compile time type must match the actual data
     type or incorrect results will be returned. Use <code class="lang-d">getType</code> to verify the type
     before calling <code class="lang-d">parseType</code>.</li>
-  <li>The *fix types have certain maximum and minimum values. Read the source
-    code and serach for <code class="lang-d">DebugMsgpackLL</code> or refer to the MessagePack specification
-    for details.</li>
+  <li>The <code class="lang-d">fix</code> types have certain maximum and minimum values. These conditions
+  need to be ensured when calling <code class="lang-d">formatType!T</code>:
+  <ul>    <li><code class="lang-d">MsgpackType.posFixInt</code>: Value must satisfy <code class="lang-d">value &lt; 128</code></li>
+    <li><code class="lang-d">MsgpackType.negFixInt</code>: Value must satisfy  <code class="lang-d">-33 &lt; value &lt; 0</code></li>
+    <li><code class="lang-d">MsgpackType.fixStr</code>: Length must satisfy  <code class="lang-d">length &lt; 32</code></li>
+    <li><code class="lang-d">MsgpackType.fixArray</code>: Length must satisfy  <code class="lang-d">length &lt; 16</code></li>
+    <li><code class="lang-d">MsgpackType.fixMap</code>: Length must satisfy  <code class="lang-d">length &lt; 16</code></li>
+  </ul>
+  Other size restrictions are automatically enforced by proper typing.
+  </li>
   <li>The <code class="lang-d">debug=DebugMsgpackLL</code> debug version can be used to enable debug checks for
     these problems.</li></ul>
+  <li>Proper formatting and parsing of complex types (maps, arrays, ext types)
+    needs help from the API user and must be done according to the MessagePack
+    specification. For example to parse an array16 of int8:
+</p>
+<pre class="code"><code class="lang-d"><span class="typ">ubyte</span><span class="pun">[] </span><span class="pln">data </span><span class="pun">= ...;
+</span><span class="typ">byte</span><span class="pun">[] </span><span class="pln">result</span><span class="pun">;
+</span><span class="com">// First read array length
+</span><span class="pln">enforce</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">data</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == <a href="./msgpack_ll/MsgpackType.array16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">array16</span></a><span class="pun">);
+</span><span class="kwd">auto </span><span class="pln">length </span><span class="pun">= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.array16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">array16</span></a><span class="pun">)(</span><span class="pln">data</span><span class="pun">[</span><span class="lit">0</span><span class="pun">..<a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.array16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">array16</span></a><span class="pun">)]);
+</span><span class="pln">data </span><span class="pun">= </span><span class="pln">data</span><span class="pun">[<a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.array16.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">array16</span></a><span class="pun">) .. $];
+</span><span class="com">// Then read array values
+</span><span class="kwd">for</span><span class="pun">(</span><span class="pln">size_t i </span><span class="pun">= </span><span class="lit">0</span><span class="pun">; </span><span class="pln">i </span><span class="pun">&lt; </span><span class="pln">length</span><span class="pun">; </span><span class="pln">i</span><span class="pun">++)
+{
+    </span><span class="pln">enforce</span><span class="pun">(<a href="./msgpack_ll/getType.html"></span><span class="pln">getType</span></a><span class="pun">(</span><span class="pln">data</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]) == <a href="./msgpack_ll/MsgpackType.int8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">int8</span></a><span class="pun">);
+    </span><span class="pln">result </span><span class="pun">~= <a href="./msgpack_ll/parseType.html"></span><span class="pln">parseType</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.int8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">int8</span></a><span class="pun">)(</span><span class="pln">data</span><span class="pun">[</span><span class="lit">0</span><span class="pun">..<a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.int8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">int8</span></a><span class="pun">)]);
+    </span><span class="pln">data </span><span class="pun">= </span><span class="pln">data</span><span class="pun">[<a href="./msgpack_ll/DataSize.html"></span><span class="typ">DataSize</span></a><span class="pun">!(<a href="./msgpack_ll/MsgpackType.int8.html"></span><span class="typ">MsgpackType<wbr/></span><span class="pun">.</span><span class="pln">int8</span></a><span class="pun">) .. $];
+}</span></code></pre>
+<p>    </li>
 </p>
 
 <p> Requires only <code class="lang-d">std.bitmanip</code> for <code class="lang-d">bigEndianToNative</code> and <code class="lang-d">nativeToBigEndian</code> as
@@ -21,7 +46,7 @@ $('#symbolSearchPane').show();</script></div><ul class="tree-view"><li><div clas
 </p>
 </section>
 <section><h2>TODO</h2>
-<p>Could try to avoid this dependency. This is only a compile time
+<p>Could try to avoid that dependency. This is only a compile time
  dependency anyway though, as these functions are templates and get inlined
  into this module.
 </p>

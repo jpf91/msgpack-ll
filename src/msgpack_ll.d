@@ -9,17 +9,46 @@
  *  $(LI When calling $(D_INLINECODE parseType) the compile time type must match the actual data
  *    type or incorrect results will be returned. Use $(D_INLINECODE getType) to verify the type
  *    before calling $(D_INLINECODE parseType).)
- *  $(LI The *fix types have certain maximum and minimum values. Read the source
- *    code and serach for $(D_INLINECODE DebugMsgpackLL) or refer to the MessagePack specification
- *    for details.)
+ *  $(LI The $(D_INLINECODE fix) types have certain maximum and minimum values. These conditions
+ *  need to be ensured when calling $(D_INLINECODE formatType!T):
+ *  $(UL
+ *    $(LI $(D_INLINECODE MsgpackType.posFixInt): Value must satisfy $(D_INLINECODE value < 128))
+ *    $(LI $(D_INLINECODE MsgpackType.negFixInt): Value must satisfy  $(D_INLINECODE -33 < value < 0))
+ *    $(LI $(D_INLINECODE MsgpackType.fixStr): Length must satisfy  $(D_INLINECODE length < 32))
+ *    $(LI $(D_INLINECODE MsgpackType.fixArray): Length must satisfy  $(D_INLINECODE length < 16))
+ *    $(LI $(D_INLINECODE MsgpackType.fixMap): Length must satisfy  $(D_INLINECODE length < 16))
+ *  )
+ *  Other size restrictions are automatically enforced by proper typing.
+ *  )
  *  $(LI The $(D_INLINECODE debug=DebugMsgpackLL) debug version can be used to enable debug checks for
  *    these problems.))
+ *  $(LI Proper formatting and parsing of complex types (maps, arrays, ext types)
+ *    needs help from the API user and must be done according to the MessagePack
+ *    specification. For example to parse an array16 of int8:
+ *    ---------------------
+ *    ubyte[] data = ...;
+ *    byte[] result;
+ *
+ *    // First read array length
+ *    enforce(getType(data[0]) == MsgpackType.array16);
+ *    auto length = parseType!(MsgpackType.array16)(data[0..DataSize!(MsgpackType.array16)]);
+ *    data = data[DataSize!(MsgpackType.array16) .. $];
+ *
+ *    // Then read array values
+ *    for(size_t i = 0; i < length; i++)
+ *    {
+ *        enforce(getType(data[0]) == MsgpackType.int8);
+ *        result ~= parseType!(MsgpackType.int8)(data[0..DataSize!(MsgpackType.int8)]);
+ *        data = data[DataSize!(MsgpackType.int8) .. $];
+ *    }
+ *    ---------------------
+ *    )
  *
  * Requires only $(D_INLINECODE std.bitmanip) for $(D_INLINECODE bigEndianToNative) and $(D_INLINECODE nativeToBigEndian) as
  * external dependency.
  *
  * TODO:
- * Could try to avoid this dependency. This is only a compile time
+ * Could try to avoid that dependency. This is only a compile time
  * dependency anyway though, as these functions are templates and get inlined
  * into this module.
  */
@@ -341,7 +370,7 @@ auto parseType(MsgpackType type)(ref ubyte[DataSize!type] data) if (!isFixExt!ty
         return null;
     }
     // boolean
-else static if (type == MsgpackType.false8)
+    else static if (type == MsgpackType.false8)
     {
         return false;
     }
@@ -350,7 +379,7 @@ else static if (type == MsgpackType.false8)
         return true;
     }
     // integers
-else static if (type == MsgpackType.posFixInt)
+    else static if (type == MsgpackType.posFixInt)
     {
         // Optimize: pos fixnum is a valid ubyte even with type information contained in first byte
         return data[0];
@@ -393,7 +422,7 @@ else static if (type == MsgpackType.posFixInt)
         return bigEndianToNative!long(data[1 .. 9]);
     }
     // floating point
-else static if (type == MsgpackType.float32)
+    else static if (type == MsgpackType.float32)
     {
         return bigEndianToNative!float(data[1 .. 5]);
     }
@@ -402,7 +431,7 @@ else static if (type == MsgpackType.float32)
         return bigEndianToNative!double(data[1 .. 9]);
     }
     // str
-else static if (type == MsgpackType.fixStr)
+    else static if (type == MsgpackType.fixStr)
     {
         return data[0] & 0x1F;
     }
@@ -419,7 +448,7 @@ else static if (type == MsgpackType.fixStr)
         return bigEndianToNative!uint(data[1 .. 5]);
     }
     // bin
-else static if (type == MsgpackType.bin8)
+    else static if (type == MsgpackType.bin8)
     {
         return data[1];
     }
@@ -432,7 +461,7 @@ else static if (type == MsgpackType.bin8)
         return bigEndianToNative!uint(data[1 .. 5]);
     }
     // array
-else static if (type == MsgpackType.fixArray)
+    else static if (type == MsgpackType.fixArray)
     {
         return data[0] & 0x0F;
     }
@@ -445,7 +474,7 @@ else static if (type == MsgpackType.fixArray)
         return bigEndianToNative!uint(data[1 .. 5]);
     }
     // map
-else static if (type == MsgpackType.fixMap)
+    else static if (type == MsgpackType.fixMap)
     {
         return data[0] & 0x0F;
     }
@@ -458,7 +487,7 @@ else static if (type == MsgpackType.fixMap)
         return bigEndianToNative!uint(data[1 .. 5]);
     }
     // ext
-else static if (type == MsgpackType.ext8)
+    else static if (type == MsgpackType.ext8)
     {
         return ExtType(data[1], data[2]);
     }
