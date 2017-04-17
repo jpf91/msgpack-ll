@@ -3,8 +3,8 @@
 	"authors": [
 		"Johannes Pfau"
 	],
-	"description": "A low level, @nogc, nothrow, @safe and betterC compatible msgpack library",
+	"description": "A low level @nogc, nothrow, @safe, pure and betterC compatible MessagePack library",
 	"copyright": "Copyright © 2017, Johannes Pfau",
-	"license": "BSL",
+	"license": "BSL-1.0",
 	"targetType": "library",
 }
