@@ -16,6 +16,7 @@ $('#symbolSearchPane').show();</script></div><ul class="tree-view"><li><div clas
     <li><code class="lang-d">MsgpackType.fixStr</code>: Length must satisfy  <code class="lang-d">length &lt; 32</code></li>
     <li><code class="lang-d">MsgpackType.fixArray</code>: Length must satisfy  <code class="lang-d">length &lt; 16</code></li>
     <li><code class="lang-d">MsgpackType.fixMap</code>: Length must satisfy  <code class="lang-d">length &lt; 16</code></li>
+    <li>All <code class="lang-d">ext</code> types: extType must satisfy  <code class="lang-d">extType &lt; 128</code></li>
   </ul>
   Other size restrictions are automatically enforced by proper typing.
   </li>

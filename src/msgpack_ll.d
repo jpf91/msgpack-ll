@@ -17,6 +17,7 @@
  *    $(LI $(D_INLINECODE MsgpackType.fixStr): Length must satisfy  $(D_INLINECODE length < 32))
  *    $(LI $(D_INLINECODE MsgpackType.fixArray): Length must satisfy  $(D_INLINECODE length < 16))
  *    $(LI $(D_INLINECODE MsgpackType.fixMap): Length must satisfy  $(D_INLINECODE length < 16))
+ *    $(LI All $(D_INLINECODE ext) types: extType must satisfy  $(D_INLINECODE extType < 128))
  *  )
  *  Other size restrictions are automatically enforced by proper typing.
  *  )
@@ -954,6 +955,9 @@ void formatType(MsgpackType type)(uint length, ref ubyte[DataSize!type] data) if
 void formatType(MsgpackType type)(ubyte extType, ref ubyte[1] value, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.fixExt1)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xd4;
     data[1] = extType;
     data[2] = value[0];
@@ -976,13 +980,16 @@ version (unittest)
 @safe unittest
 {
     ubyte[1] testData = [42];
-    testFixExt!(MsgpackType.fixExt1)(ubyte.max, testData);
+    testFixExt!(MsgpackType.fixExt1)(127, testData);
 }
 
 /// ditto
 void formatType(MsgpackType type)(ubyte extType, ref ubyte[2] value, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.fixExt2)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xd5;
     data[1] = extType;
     data[2 .. 4] = value[0 .. 2];
@@ -991,13 +998,16 @@ void formatType(MsgpackType type)(ubyte extType, ref ubyte[2] value, ref ubyte[D
 @safe unittest
 {
     ubyte[2] testData = [42, 42];
-    testFixExt!(MsgpackType.fixExt2)(ubyte.max, testData);
+    testFixExt!(MsgpackType.fixExt2)(127, testData);
 }
 
 /// ditto
 void formatType(MsgpackType type)(ubyte extType, ref ubyte[4] value, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.fixExt4)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xd6;
     data[1] = extType;
     data[2 .. 6] = value[0 .. 4];
@@ -1006,13 +1016,16 @@ void formatType(MsgpackType type)(ubyte extType, ref ubyte[4] value, ref ubyte[D
 @safe unittest
 {
     ubyte[4] testData = [42, 42, 42, 42];
-    testFixExt!(MsgpackType.fixExt4)(ubyte.max, testData);
+    testFixExt!(MsgpackType.fixExt4)(127, testData);
 }
 
 /// ditto
 void formatType(MsgpackType type)(ubyte extType, ref ubyte[8] value, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.fixExt8)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xd7;
     data[1] = extType;
     data[2 .. 10] = value[0 .. 8];
@@ -1021,13 +1034,16 @@ void formatType(MsgpackType type)(ubyte extType, ref ubyte[8] value, ref ubyte[D
 @safe unittest
 {
     ubyte[8] testData = [42, 42, 42, 42, 42, 42, 42, 42];
-    testFixExt!(MsgpackType.fixExt8)(ubyte.max, testData);
+    testFixExt!(MsgpackType.fixExt8)(127, testData);
 }
 
 /// ditto
 void formatType(MsgpackType type)(ubyte extType, ref ubyte[16] value, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.fixExt16)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xd8;
     data[1] = extType;
     data[2 .. 18] = value[0 .. 16];
@@ -1037,7 +1053,7 @@ void formatType(MsgpackType type)(ubyte extType, ref ubyte[16] value, ref ubyte[
 {
     ubyte[16] testData = [42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,
         42];
-    testFixExt!(MsgpackType.fixExt16)(ubyte.max, testData);
+    testFixExt!(MsgpackType.fixExt16)(127, testData);
 }
 
 version (unittest)
@@ -1058,6 +1074,9 @@ version (unittest)
 void formatType(MsgpackType type)(ubyte length, ubyte extType, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.ext8)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xc7;
     data[1] = length;
     data[2] = extType;
@@ -1065,13 +1084,16 @@ void formatType(MsgpackType type)(ubyte length, ubyte extType, ref ubyte[DataSiz
 
 @safe unittest
 {
-    testExt!(MsgpackType.ext8)(ubyte.max, ubyte.max);
+    testExt!(MsgpackType.ext8)(ubyte.max, 127);
 }
 
 /// ditto
 void formatType(MsgpackType type)(ushort length, ubyte extType, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.ext16)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xc8;
     data[1 .. 3] = nativeToBigEndian(length);
     data[3] = extType;
@@ -1079,13 +1101,16 @@ void formatType(MsgpackType type)(ushort length, ubyte extType, ref ubyte[DataSi
 
 @safe unittest
 {
-    testExt!(MsgpackType.ext16)(ushort.max, ubyte.max);
+    testExt!(MsgpackType.ext16)(ushort.max, 127);
 }
 
 /// ditto
 void formatType(MsgpackType type)(uint length, ubyte extType, ref ubyte[DataSize!type] data) if (
         type == MsgpackType.ext32)
 {
+    debug (DebugMsgpackLL)
+        assert(extType < 128);
+
     data[0] = 0xc9;
     data[1 .. 5] = nativeToBigEndian(length);
     data[5] = extType;
@@ -1093,5 +1118,5 @@ void formatType(MsgpackType type)(uint length, ubyte extType, ref ubyte[DataSize
 
 @safe unittest
 {
-    testExt!(MsgpackType.ext32)(uint.max, ubyte.max);
+    testExt!(MsgpackType.ext32)(uint.max, 127);
 }
